@@ -34,7 +34,11 @@ DEFAULT_REASONING_EFFORT = "medium"
 DEFAULT_PARTS = ("main", "headers", "footers", "footnotes", "endnotes")
 
 # Bump whenever prompts, window semantics, or correction reconciliation changes.
+<<<<<<< HEAD
 PROMPT_VERSION = "docx-proofreader-v4-context-precedence"
+=======
+PROMPT_VERSION = "docx-proofreader-v5-context-precedence"
+>>>>>>> 9b73426 (corrections)
 EDITABLE_START = "<<<PROOFREADER_EDITABLE_START_8C1B>>>"
 EDITABLE_END = "<<<PROOFREADER_EDITABLE_END_8C1B>>>"
 

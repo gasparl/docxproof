@@ -153,8 +153,14 @@ class DeepSeekAdapter:
             "response_format": {"type": "json_object"},
             "max_tokens": self.max_output_tokens,
             "reasoning_effort": self.reasoning_effort,
+<<<<<<< HEAD
             "extra_body": {"thinking": {"type": "enabled"}},
         }
+=======
+        }
+        if self.reasoning_effort != "low":
+            kwargs["extra_body"] = {"thinking": {"type": "enabled"}}
+>>>>>>> 9b73426 (corrections)
 
         response = self.client.chat.completions.create(**kwargs)
         choice = response.choices[0]
@@ -172,6 +178,19 @@ class DeepSeekAdapter:
             raise RetryableModelError(f"Invalid DeepSeek JSON output: {exc}") from exc
 
 
+<<<<<<< HEAD
+=======
+def _resolve_deepseek_reasoning_effort(model: str, reasoning_effort: str) -> str:
+    if reasoning_effort == "none":
+        return "low"
+    if model.endswith("-flash") and reasoning_effort == "medium":
+        return "low"
+    if reasoning_effort == "medium":
+        return "high"
+    return reasoning_effort
+
+
+>>>>>>> 9b73426 (corrections)
 def build_adapter(
     provider: str,
     model: str,
@@ -189,9 +208,13 @@ def build_adapter(
             reasoning_effort=reasoning_effort,
         )
     if provider == "deepseek":
+<<<<<<< HEAD
         deepseek_effort = "high" if reasoning_effort == "medium" else reasoning_effort
         if deepseek_effort == "none":
             deepseek_effort = "low"
+=======
+        deepseek_effort = _resolve_deepseek_reasoning_effort(model, reasoning_effort)
+>>>>>>> 9b73426 (corrections)
         return DeepSeekAdapter(
             api_key=api_key,
             model=model,
