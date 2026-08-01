@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from typing import Any, Protocol
 
@@ -37,6 +38,9 @@ def _strip_json_fences(text: str) -> str:
         stripped = re.sub(r"^```(?:json)?\s*", "", stripped, flags=re.IGNORECASE)
         stripped = re.sub(r"\s*```$", "", stripped)
     return stripped.strip()
+
+
+logger = logging.getLogger(__name__)
 
 
 class OpenAIAdapter:
@@ -152,16 +156,30 @@ class DeepSeekAdapter:
             ],
             "response_format": {"type": "json_object"},
             "max_tokens": self.max_output_tokens,
-            "reasoning_effort": self.reasoning_effort,
+            "extra_body": {"thinking": {"type": "disabled"}},
         }
-        if self.reasoning_effort != "low":
-            kwargs["extra_body"] = {"thinking": {"type": "enabled"}}
 
         response = self.client.chat.completions.create(**kwargs)
+        usage = getattr(response, "usage", None)
+        if usage is not None:
+            prompt_tokens = getattr(usage, "prompt_tokens", None)
+            completion_tokens = getattr(usage, "completion_tokens", None)
+            reasoning_tokens = None
+            details = getattr(usage, "completion_tokens_details", None)
+            if details is not None:
+                reasoning_tokens = getattr(details, "reasoning_tokens", None)
+            logger.info(
+                "DeepSeek token usage: prompt=%s completion=%s reasoning=%s",
+                prompt_tokens,
+                completion_tokens,
+                reasoning_tokens,
+            )
         choice = response.choices[0]
         if choice.finish_reason in {"length", "insufficient_system_resource"}:
-            raise RetryableModelError(
-                f"DeepSeek response ended with finish_reason={choice.finish_reason}"
+            raise RuntimeError(
+                "DeepSeek response hit output limits "
+                f"(finish_reason={choice.finish_reason}). "
+                "Retry with --max-output-tokens, --window-words, or another model."
             )
         content = choice.message.content or ""
         if not content.strip():
@@ -175,7 +193,7 @@ class DeepSeekAdapter:
 
 def _resolve_deepseek_reasoning_effort(model: str, reasoning_effort: str) -> str:
     if reasoning_effort == "none":
-        return "low"
+        return "none"
     if model.endswith("-flash") and reasoning_effort == "medium":
         return "low"
     if reasoning_effort == "medium":

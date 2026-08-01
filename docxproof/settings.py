@@ -50,6 +50,26 @@ def resolve_model(provider: str, model: str | None) -> str:
     return resolved
 
 
+def infer_provider_from_model(model: str) -> str:
+    for provider, models in MODEL_OPTIONS.items():
+        if model in models:
+            return provider
+    known = ", ".join(sorted({m for models in MODEL_OPTIONS.values() for m in models}))
+    raise ValueError(f"Unknown model {model!r}. Known models: {known}")
+
+
+def resolve_provider_and_model(
+    provider: str | None,
+    model: str | None,
+) -> tuple[str, str]:
+    if provider is None:
+        resolved_provider = infer_provider_from_model(model) if model else DEFAULT_PROVIDER
+    else:
+        resolved_provider = provider.lower()
+    resolved_model = resolve_model(resolved_provider, model)
+    return resolved_provider, resolved_model
+
+
 def find_config_path(path: str | Path | None = None) -> Path | None:
     if path is not None:
         return Path(path).expanduser().resolve()

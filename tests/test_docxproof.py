@@ -13,7 +13,12 @@ from PIL import Image
 from docxproof import engine
 from docxproof.providers import _resolve_deepseek_reasoning_effort
 from docxproof.schemas import Correction, CorrectionBatch, ProposedPatch
-from docxproof.settings import EDITABLE_END, EDITABLE_START, resolve_model
+from docxproof.settings import (
+    EDITABLE_END,
+    EDITABLE_START,
+    resolve_model,
+    resolve_provider_and_model,
+)
 
 
 class FakeAdapter:
@@ -70,6 +75,18 @@ class DocxProofTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             resolve_model("openai", "arbitrary-model")
 
+    def test_provider_can_be_inferred_from_model(self) -> None:
+        self.assertEqual(
+            resolve_provider_and_model(None, "deepseek-v4-pro"),
+            ("deepseek", "deepseek-v4-pro"),
+        )
+        self.assertEqual(
+            resolve_provider_and_model(None, "gpt-5.6"),
+            ("openai", "gpt-5.6"),
+        )
+        with self.assertRaises(ValueError):
+            resolve_provider_and_model("openai", "deepseek-v4-pro")
+
     def test_deepseek_flash_uses_low_reasoning_by_default(self) -> None:
         self.assertEqual(
             _resolve_deepseek_reasoning_effort("deepseek-v4-flash", "medium"),
@@ -78,6 +95,10 @@ class DocxProofTests(unittest.TestCase):
         self.assertEqual(
             _resolve_deepseek_reasoning_effort("deepseek-v4-pro", "medium"),
             "high",
+        )
+        self.assertEqual(
+            _resolve_deepseek_reasoning_effort("deepseek-v4-pro", "none"),
+            "none",
         )
 
     def test_windows_overlap_but_keep_primary_regions_for_reporting(self) -> None:

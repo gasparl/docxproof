@@ -12,7 +12,6 @@ from .providers import build_adapter
 from .settings import (
     AVAILABLE_PROVIDERS,
     DEFAULT_PARTS,
-    DEFAULT_PROVIDER,
     DEFAULT_REASONING_EFFORT,
     MODEL_OPTIONS,
     OVERLAP_WORDS,
@@ -20,7 +19,7 @@ from .settings import (
     VERIFY_SUGGESTIONS,
     WINDOW_WORDS,
     load_config,
-    resolve_model,
+    resolve_provider_and_model,
 )
 
 
@@ -32,9 +31,10 @@ def easy_proofread(
     input_docx: str | Path = "input.docx",
     output_docx: str | Path | None = None,
     *,
-    provider: str = DEFAULT_PROVIDER,
+    provider: str | None = None,
     model: str | None = None,
     reasoning_effort: str = DEFAULT_REASONING_EFFORT,
+    max_output_tokens: int | None = None,
     window_words: int = WINDOW_WORDS,
     overlap_words: int = OVERLAP_WORDS,
     verify: bool = VERIFY_SUGGESTIONS,
@@ -42,8 +42,7 @@ def easy_proofread(
     config_path: str | Path | None = None,
 ):
     """Create a proofread DOCX while preserving the original package structure."""
-    provider = provider.lower()
-    model = resolve_model(provider, model)
+    provider, model = resolve_provider_and_model(provider, model)
     input_path = Path(input_docx).expanduser().resolve()
     output_path = (
         Path(output_docx).expanduser().resolve()
@@ -56,6 +55,7 @@ def easy_proofread(
         model,
         load_config(config_path),
         reasoning_effort=reasoning_effort,
+        max_output_tokens=max_output_tokens,
     )
 
     print(f"Proofreading {input_path.name} with {provider}/{model} ...")
@@ -96,7 +96,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("input", help="Input DOCX")
     parser.add_argument("output", nargs="?", help="Output DOCX (default: <name>_proofread.docx)")
-    parser.add_argument("--provider", choices=AVAILABLE_PROVIDERS, default=DEFAULT_PROVIDER)
+    parser.add_argument(
+        "--provider",
+        choices=AVAILABLE_PROVIDERS,
+        help="Provider (optional when --model uniquely identifies it)",
+    )
     parser.add_argument("--model", help=f"Supported models: {model_help}")
     parser.add_argument("--config", help="Path to config.json (default: ./config.json)")
     parser.add_argument("--window-words", type=int, default=WINDOW_WORDS)
@@ -115,8 +119,13 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--reasoning",
-        choices=("low", "medium", "high"),
+        choices=("none", "low", "medium", "high"),
         default=DEFAULT_REASONING_EFFORT,
+    )
+    parser.add_argument(
+        "--max-output-tokens",
+        type=int,
+        help="Override provider output token limit for a single run",
     )
     parser.add_argument("--retries", type=int, default=RETRIES)
     parser.add_argument("--checkpoint")
@@ -128,8 +137,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def cli_main(argv: Sequence[str] | None = None) -> int:
     args = build_arg_parser().parse_args(argv)
     try:
-        provider = args.provider.lower()
-        model = resolve_model(provider, args.model)
+        provider, model = resolve_provider_and_model(args.provider, args.model)
         input_path = Path(args.input).expanduser().resolve()
         output_path = (
             Path(args.output).expanduser().resolve()
@@ -141,6 +149,7 @@ def cli_main(argv: Sequence[str] | None = None) -> int:
             model,
             load_config(args.config),
             reasoning_effort=args.reasoning,
+            max_output_tokens=args.max_output_tokens,
         )
         result = run_proofreader(
             input_path,

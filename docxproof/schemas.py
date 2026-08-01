@@ -46,6 +46,8 @@ Find only unquestionable, objective errors, mainly spelling, grammar,
 punctuation when objectively wrong, or clearly incorrect word choice. Do not
 make stylistic changes, rephrase for elegance, alter voice, simplify, improve
 flow, change facts, or normalize an acceptable informal or colloquial style.
+If a passage is not English, leave it unchanged unless it contains an obvious
+copying error or malformed punctuation independent of language.
 
 The excerpt contains paragraph labels such as [[D-P000001]] and one review
 region delimited by {EDITABLE_START} and {EDITABLE_END}. The entire marked

@@ -85,14 +85,20 @@ Package command:
 python -m docxproof paper.docx
 ```
 
-Choose provider and model:
+Choose model:
+
+```bash
+python -m docxproof paper.docx --model deepseek-v4-pro
+```
+
+Or choose provider and model explicitly:
 
 ```bash
 python -m docxproof paper.docx --provider openai --model gpt-5.6
 ```
 
 ```bash
-python -m docxproof paper.docx --provider deepseek --model deepseek-v4-flash
+python -m docxproof paper.docx --provider deepseek --model deepseek-v4-pro
 ```
 
 Custom context windows:
