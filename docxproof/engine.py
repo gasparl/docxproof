@@ -359,7 +359,13 @@ def render_window_text(
         if paragraph.story_end < context_start or paragraph.story_start > context_end:
             continue
         label_pos = max(context_start, paragraph.story_start)
-        events.append((label_pos, 1, f"[[{paragraph.paragraph_id}]] "))
+        # If the paragraph actually began before this window, the visible text
+        # is a mid-paragraph (often mid-sentence) continuation. Flag that
+        # explicitly so the model does not mistake the excerpt's first visible
+        # word for the paragraph's true, capitalization-worthy start.
+        continued = paragraph.story_start < context_start
+        suffix = " continued" if continued else ""
+        events.append((label_pos, 1, f"[[{paragraph.paragraph_id}{suffix}]] "))
 
     events.append((context_end, 0, EDITABLE_END))
     events.append((context_start, 2, EDITABLE_START))
@@ -681,6 +687,11 @@ def validate_batch(
     for correction in batch.corrections:
         paragraph = paragraph_map.get(correction.paragraph_id)
         if paragraph is None:
+            # Models occasionally echo the full excerpt label, including the
+            # "continued" marker used for mid-paragraph windows.
+            trimmed_id = correction.paragraph_id.split(" ", 1)[0]
+            paragraph = paragraph_map.get(trimmed_id)
+        if paragraph is None:
             reject(correction, "unknown paragraph_id")
             continue
         if correction.original == correction.replacement:
@@ -748,6 +759,21 @@ def validate_batch(
             continue
         if not range_is_editable(paragraph, local_start, local_end):
             reject(correction, "minimal range is not safely editable")
+            continue
+        correction_word_start, _correction_word_end = _range_word_span(
+            story,
+            global_start,
+            global_end,
+        )
+        if (
+            paragraph.story_start < context_char_start
+            and correction_word_start == window.context_word_start
+            and minimal_original.lower() == minimal_replacement.lower()
+        ):
+            reject(
+                correction,
+                "case-only edit targets the first visible word of a continuing paragraph",
+            )
             continue
         if not _range_within_word_bounds(
             story,

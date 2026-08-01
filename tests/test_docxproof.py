@@ -144,6 +144,30 @@ class DocxProofTests(unittest.TestCase):
         self.assertTrue(accepted[0].corroborated)
         self.assertTrue(accepted[0].primary_owner_seen)
 
+    def test_rejects_case_only_edit_at_continuing_window_start(self) -> None:
+        temp_dir, story = self._word_story()
+        self.addCleanup(temp_dir.cleanup)
+        second = engine.make_windows(story, 400, 100)[1]
+        paragraph_id = story.paragraphs[0].paragraph_id
+        batch = CorrectionBatch(
+            corrections=[
+                Correction(
+                    paragraph_id=paragraph_id,
+                    original="w300",
+                    replacement="W300",
+                    reason="capitalization",
+                )
+            ]
+        )
+
+        accepted, rejected = engine.validate_batch(story, second, batch)
+
+        self.assertFalse(accepted)
+        self.assertEqual(
+            rejected[0].rejection,
+            "case-only edit targets the first visible word of a continuing paragraph",
+        )
+
     def test_equivalent_broad_and_minimal_edits_are_normalized_and_merged(self) -> None:
         temp_dir, story = self._word_story()
         self.addCleanup(temp_dir.cleanup)

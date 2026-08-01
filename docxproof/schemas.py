@@ -12,7 +12,11 @@ from .settings import EDITABLE_END, EDITABLE_START
 
 class Correction(BaseModel):
     paragraph_id: str = Field(
-        description="The exact paragraph label, for example D-P000012."
+        description=(
+            "The paragraph identifier only, for example D-P000012. If the "
+            "excerpt label reads [[D-P000012 continued]], still use just "
+            "D-P000012; never include the word 'continued'."
+        )
     )
     original: str = Field(
         min_length=1,
@@ -56,6 +60,15 @@ text may be reviewed more than once; duplicate proposals are reconciled later.
 Report a correction only when the entire original substring lies inside the
 marked region and inside one paragraph. Never include labels or markers in a
 correction.
+
+A label such as [[D-P000001 continued]] means that paragraph's text already
+began in earlier, unseen content; only the identifier before "continued" is
+the paragraph_id. Because requests are arbitrary excerpts of a larger
+document, the visible text can start or end mid-sentence or mid-paragraph.
+Never change the capitalization of the first visible word, never add or
+remove sentence-ending punctuation, and never treat either edge of the
+excerpt as a real sentence, paragraph, or document boundary unless the
+surrounding text you can see proves it actually is one.
 
 For every correction:
 * copy original exactly, including capitalization and punctuation;
