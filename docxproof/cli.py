@@ -24,7 +24,7 @@ from .settings import (
 
 
 def default_output_path(input_path: Path) -> Path:
-    return input_path.with_name(f"{input_path.stem}_proofread{input_path.suffix}")
+    return input_path.parent / "output" / f"{input_path.stem}_proofread{input_path.suffix}"
 
 
 def easy_proofread(
@@ -95,7 +95,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
         description="Proofread a DOCX and create a formatting-preserving corrected copy.",
     )
     parser.add_argument("input", help="Input DOCX")
-    parser.add_argument("output", nargs="?", help="Output DOCX (default: <name>_proofread.docx)")
+    parser.add_argument(
+        "output",
+        nargs="?",
+        help="Output DOCX (default: output/<name>_proofread.docx beside input)",
+    )
     parser.add_argument(
         "--provider",
         choices=AVAILABLE_PROVIDERS,

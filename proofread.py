@@ -8,7 +8,7 @@ AI_PROVIDER = "openai"       # "openai" or "deepseek"
 MODEL = "gpt-5.6-terra"      # OpenAI: gpt-5.6-terra | gpt-5.6
                               # DeepSeek: deepseek-v4-pro | deepseek-v4-flash
 INPUT_DOCX = "input.docx"
-OUTPUT_DOCX = None            # None -> <input name>_proofread.docx beside input
+OUTPUT_DOCX = None            # None -> output/<input name>_proofread.docx beside input
 
 WINDOW_WORDS = 400
 OVERLAP_WORDS = 100

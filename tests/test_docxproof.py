@@ -11,6 +11,7 @@ from docx import Document
 from PIL import Image
 
 from docxproof import engine
+from docxproof.cli import default_output_path
 from docxproof.providers import _resolve_deepseek_reasoning_effort
 from docxproof.schemas import Correction, CorrectionBatch, ProposedPatch
 from docxproof.settings import (
@@ -60,6 +61,14 @@ class FakeAdapter:
 
 
 class DocxProofTests(unittest.TestCase):
+    def test_default_output_path_uses_output_subdirectory(self) -> None:
+        input_path = Path("/documents/paper.docx")
+
+        self.assertEqual(
+            default_output_path(input_path),
+            Path("/documents/output/paper_proofread.docx"),
+        )
+
     def _word_story(self, count: int = 1000):
         temp_dir = tempfile.TemporaryDirectory()
         path = Path(temp_dir.name) / "window.docx"

@@ -63,12 +63,14 @@ python proofread.py \
   "/media/username/output/paper_corrected.docx"
 ```
 
-When no output path is supplied, the corrected DOCX and reports are written beside the input DOCX:
+When no output path is supplied, the corrected DOCX, reports, and any retained checkpoint
+are written in an `output/` subdirectory beside the input DOCX. This directory is ignored by Git:
 
 ```text
-paper_proofread.docx
-paper_proofread.proofreading.txt
-paper_proofread.proofreading.json
+output/paper_proofread.docx
+output/paper_proofread.proofreading.txt
+output/paper_proofread.proofreading.json
+output/paper_proofread.docx.checkpoint.json
 ```
 
 ## Run

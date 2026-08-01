@@ -9,6 +9,7 @@ config.json
 *.checkpoint.json
 *.proofreading.json
 *.proofreading.txt
+output/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

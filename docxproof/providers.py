@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import logging
 import re
 from typing import Any, Protocol
 
@@ -38,9 +37,6 @@ def _strip_json_fences(text: str) -> str:
         stripped = re.sub(r"^```(?:json)?\s*", "", stripped, flags=re.IGNORECASE)
         stripped = re.sub(r"\s*```$", "", stripped)
     return stripped.strip()
-
-
-logger = logging.getLogger(__name__)
 
 
 class OpenAIAdapter:
@@ -160,20 +156,6 @@ class DeepSeekAdapter:
         }
 
         response = self.client.chat.completions.create(**kwargs)
-        usage = getattr(response, "usage", None)
-        if usage is not None:
-            prompt_tokens = getattr(usage, "prompt_tokens", None)
-            completion_tokens = getattr(usage, "completion_tokens", None)
-            reasoning_tokens = None
-            details = getattr(usage, "completion_tokens_details", None)
-            if details is not None:
-                reasoning_tokens = getattr(details, "reasoning_tokens", None)
-            logger.info(
-                "DeepSeek token usage: prompt=%s completion=%s reasoning=%s",
-                prompt_tokens,
-                completion_tokens,
-                reasoning_tokens,
-            )
         choice = response.choices[0]
         if choice.finish_reason in {"length", "insufficient_system_resource"}:
             raise RuntimeError(
