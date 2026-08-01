@@ -70,8 +70,6 @@ class DocxProofTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             resolve_model("openai", "arbitrary-model")
 
-<<<<<<< HEAD
-=======
     def test_deepseek_flash_uses_low_reasoning_by_default(self) -> None:
         self.assertEqual(
             _resolve_deepseek_reasoning_effort("deepseek-v4-flash", "medium"),
@@ -82,7 +80,6 @@ class DocxProofTests(unittest.TestCase):
             "high",
         )
 
->>>>>>> 9b73426 (corrections)
     def test_windows_overlap_but_keep_primary_regions_for_reporting(self) -> None:
         temp_dir, story = self._word_story()
         self.addCleanup(temp_dir.cleanup)
