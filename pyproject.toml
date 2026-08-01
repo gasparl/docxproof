@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "docxproof"
+version = "4.0.0"
+description = "Formatting-preserving AI proofreading for DOCX files"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "lxml>=5.3,<7",
+  "openai>=2.0,<3",
+  "pydantic>=2.10,<3",
+]
+
+[project.optional-dependencies]
+test = [
+  "python-docx>=1.1,<2",
+  "Pillow>=10,<13",
+]
+
+[project.scripts]
+docx-proofread = "docxproof.cli:cli_main"
+
+[tool.setuptools.packages.find]
+include = ["docxproof*"]
