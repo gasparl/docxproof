@@ -51,6 +51,7 @@ from .settings import (
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%H:%M:%S",
 )
 for noisy_logger in ("openai", "httpx", "httpcore"):
     logging.getLogger(noisy_logger).setLevel(logging.WARNING)
@@ -441,6 +442,12 @@ def call_with_retries(
     retries: int,
 ) -> CorrectionBatch:
     """Call one provider request at a time with exponential retry backoff."""
+    def _compact_error(exc: BaseException) -> str:
+        text = str(exc).strip().replace("\n", " ")
+        if len(text) > 120:
+            return text[:117] + "..."
+        return text
+
     last_error: BaseException | None = None
     for attempt in range(retries):
         try:
@@ -457,12 +464,11 @@ def call_with_retries(
             break
         wait = min(60.0, 2**attempt + random.random())
         logger.warning(
-            "%s: %s. Retrying in %.1fs (%d/%d)",
-            type(last_error).__name__,
-            last_error,
-            wait,
+            "Retry %d/%d in %.1fs: %s",
             attempt + 1,
             retries,
+            wait,
+            _compact_error(last_error),
         )
         time.sleep(wait)
 
@@ -1281,14 +1287,14 @@ def run_proofreader(
         if cached is not None:
             try:
                 batch = CorrectionBatch.model_validate(cached)
-                logger.info("Using checkpoint for %s", window.key)
+                logger.debug("Using checkpoint for %s", window.key)
             except ValidationError:
                 logger.warning("Ignoring invalid cached result for %s", window.key)
                 cached = None
 
         if cached is None:
             try:
-                logger.info("Proofreading %s ...", window.key)
+                logger.debug("Proofreading %s", window.key)
                 batch = proofread_window(
                     adapter,
                     window,
@@ -1302,7 +1308,7 @@ def run_proofreader(
 
         if error:
             result.failed_windows += 1
-            logger.error("Window %s failed: %s", window.key, error)
+            logger.error("Window %s failed (%s)", window.key, error)
             if fail_on_window_error:
                 save_checkpoint(checkpoint_path, checkpoint)
                 raise RuntimeError(f"Window {window.key} failed: {error}")
@@ -1323,11 +1329,11 @@ def run_proofreader(
         remaining_seconds = average * (total - completed)
         eta = datetime.now() + timedelta(seconds=remaining_seconds)
         logger.info(
-            "Progress %d/%d; ETA %s (about %s remaining)",
+            "Progress %d/%d; ETA %s (ca. %s left)",
             completed,
             total,
             eta.strftime("%H:%M"),
-            str(timedelta(seconds=int(remaining_seconds))),
+            str(timedelta(seconds=max(0, int(remaining_seconds)))),
         )
 
     accepted, conflict_rejections = resolve_conflicts(all_validated)
