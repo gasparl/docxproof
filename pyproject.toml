@@ -1,18 +1,10 @@
 [build-system]
-<<<<<<< HEAD
-requires = ["setuptools>=75", "wheel"]
-=======
 requires = ["setuptools>=64", "wheel"]
->>>>>>> 9b73426 (corrections)
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "docxproof"
-<<<<<<< HEAD
-version = "4.0.0"
-=======
 version = "5.0.0"
->>>>>>> 9b73426 (corrections)
 description = "Formatting-preserving AI proofreading for DOCX files"
 readme = "README.md"
 requires-python = ">=3.10"
