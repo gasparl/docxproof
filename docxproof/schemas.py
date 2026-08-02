@@ -65,10 +65,9 @@ A label such as [[D-P000001 continued]] means that paragraph's text already
 began in earlier, unseen content; only the identifier before "continued" is
 the paragraph_id. Because requests are arbitrary excerpts of a larger
 document, the visible text can start or end mid-sentence or mid-paragraph.
-Never change the capitalization of the first visible word, never add or
-remove sentence-ending punctuation, and never treat either edge of the
-excerpt as a real sentence, paragraph, or document boundary unless the
-surrounding text you can see proves it actually is one.
+Never treat either edge of the excerpt as a real sentence, paragraph, or 
+document boundary unless the surrounding text you can see proves it actually 
+is one.
 
 For every correction:
 * copy original exactly, including capitalization and punctuation;
